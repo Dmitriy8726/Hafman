@@ -4,63 +4,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Random;
+import java.util.*;
 
 public class Main {
 
-    static class Node implements Comparable<Node> {
-        final float sum;
-        String code;
-
-        void buildCode(String code) {
-            this.code = code;
-        }
-
-        public Node(float sum) {
-            this.sum = sum;
-        }
-
-        @Override
-        public int compareTo(Node o) {
-            return Float.compare(sum, o.sum);
-        }
-    }
-
-    static class InternalNode extends Node{
-        Node left;
-        Node right;
-
-        @Override
-        void buildCode(String code) {
-            super.buildCode(code);
-            left.buildCode(code + "0");
-            right.buildCode(code + "1");
-        }
-
-        public InternalNode(Node left, Node right) {
-            super(left.sum + right.sum);
-            this.left = left;
-            this.right = right;
-        }
-    }
-
-    static class LearfNode extends Node {
-        String symbol;
-
-        @Override
-        void buildCode(String code) {
-            super.buildCode(code);
-            System.out.println(symbol + ": " + code);
-        }
-
-        public LearfNode(String symbol, float count) {
-            super(count);
-            this.symbol = symbol;
-        }
-    }
 
     public static void main(String[] args) throws IOException {
 	// write your code here
@@ -157,14 +104,14 @@ public class Main {
         float freq_a_F1 = 0, freq_b_F1 = 0, freq_c_F1 = 0;
         float freq_a_F2 = 0, freq_b_F2 = 0, freq_c_F2 = 0;
         HashMap<String, Float> map = new HashMap<>();
-        HashMap <String, Float> map_prob_F1 = new HashMap<>(); //Вероятности
-        HashMap <String, Float> map_prob_F2 = new HashMap<>(); //Вероятности
-        HashMap <String, Float> map_prob_F3 = new HashMap<>(); //Вероятности
+        HashMap<String, Float> map_prob_F1 = new HashMap<>(); //Вероятности
+        HashMap<String, Float> map_prob_F2 = new HashMap<>(); //Вероятности
+        HashMap<String, Float> map_prob_F3 = new HashMap<>(); //Вероятности
 
         //Подсчет вероятностей
-        while((ch = reader_F1.read()) != -1) {
+        while ((ch = reader_F1.read()) != -1) {
             all_F1++;
-            switch ((char)ch) {
+            switch ((char) ch) {
                 case 'a':
                     a_F1++;
                     break;
@@ -178,16 +125,16 @@ public class Main {
                     break;
             }
         }
-        freq_a_F1 = (float)a_F1 / all_F1;
-        freq_b_F1 = (float)b_F1 / all_F1;
-        freq_c_F1 = (float)c_F1 / all_F1;
+        freq_a_F1 = (float) a_F1 / all_F1;
+        freq_b_F1 = (float) b_F1 / all_F1;
+        freq_c_F1 = (float) c_F1 / all_F1;
         map_prob_F1.put("a", freq_a_F1);
         map_prob_F1.put("b", freq_b_F1);
         map_prob_F1.put("c", freq_c_F1);
 
-        while((ch =reader_F2.read()) != -1) {
+        while ((ch = reader_F2.read()) != -1) {
             all_F2++;
-            switch ((char)ch) {
+            switch ((char) ch) {
                 case 'a':
                     a_F2++;
                     break;
@@ -201,15 +148,15 @@ public class Main {
                     break;
             }
         }
-        freq_a_F2 = (float)a_F2 / all_F2;
-        freq_b_F2 = (float)b_F2 / all_F2;
-        freq_c_F2 = (float)c_F2 / all_F2;
+        freq_a_F2 = (float) a_F2 / all_F2;
+        freq_b_F2 = (float) b_F2 / all_F2;
+        freq_c_F2 = (float) c_F2 / all_F2;
         map_prob_F2.put("a", freq_a_F2);
         map_prob_F2.put("b", freq_b_F2);
         map_prob_F2.put("c", freq_c_F2);
 
-        while((ch = reader_F3.read()) != -1) {
-            String str = String.valueOf((char)ch);
+        while ((ch = reader_F3.read()) != -1) {
+            String str = String.valueOf((char) ch);
             str = str.toLowerCase();
             str = str.replaceAll("[^а-яё]", "");
             if (str.isEmpty()) {
@@ -222,45 +169,63 @@ public class Main {
                 map.put(str, i);
             }
         }
-        for(Map.Entry entry: map.entrySet()) {
-            all_F3 += (Float)entry.getValue();
+        for (Map.Entry entry : map.entrySet()) {
+            all_F3 += (Float) entry.getValue();
         }
 
-        for(Map.Entry entry: map.entrySet()) {
-            map_prob_F3.put(entry.getKey().toString(), (Float)entry.getValue() / all_F3);
+        for (Map.Entry entry : map.entrySet()) {
+            map_prob_F3.put(entry.getKey().toString(), (Float) entry.getValue() / all_F3);
         }
 
+        ArrayList<Float> arr = new ArrayList<>(map_prob_F2.values());
+        Collections.sort(arr);
 
-        Map <String, Node> stringMode = new HashMap<>();
-        PriorityQueue<Node> priorityQueue = new PriorityQueue<>();
-        for (Map.Entry<String, Float> entry: map_prob_F3.entrySet() ) {
-            LearfNode node = new LearfNode(entry.getKey(), entry.getValue());
-            stringMode.put(entry.getKey(), node);
-            priorityQueue.add(node);
-        }
-        float sum = 0;
-        while (priorityQueue.size() > 1) {
-            Node first = priorityQueue.poll();
-            Node second = priorityQueue.poll();
-            InternalNode node = new InternalNode(first, second);
-            sum += node.sum;
-            priorityQueue.add(node);
+        Map<Float, String> tt = new HashMap<>();
+        for (float p: arr) {
+            tt.put(p, "");
         }
 
-        Node root = priorityQueue.poll();
-        assert root != null;
-        root.buildCode("");
-        File F1 = new File("resource\\file", "F3_exmpl.txt");
-        FileWriter writer_F1 = new FileWriter("resource\\file\\F3_exmpl.txt");
-        reader_F1 = new FileReader("resource\\file\\F3.txt");
-        while((ch = reader_F1.read()) != -1) {
-            if (map_prob_F3.containsKey(String.valueOf((char)ch))) {
-                writer_F1.write(stringMode.get(String.valueOf((char) ch)).code);
-            }
-        }
-        writer_F1.flush();
-        writer_F1.close();
-
+        Main n = new Main();
+        n.Fano(0, arr.size() - 1, arr, tt);
+        System.out.println(tt);
     }
+
+    private void Fano(int L, int R, ArrayList<Float> arr, Map<Float, String> map) {
+        int m;
+        if (L < R) {
+            m = Med(L, R, arr);
+            System.out.println(L + " : " + R + ": " + m);
+            for (int i = L; i <= R; i++) {
+                if (i <= m) {
+                    map.replace(arr.get(i), map.get(arr.get(i)) + "0");
+                } else {
+                    map.replace(arr.get(i), map.get(arr.get(i)) + "1");
+                }
+            }
+            Fano(L, m, arr, map);
+            Fano(m + 1, R, arr, map);
+        }
+    }
+
+    private int Med(int L, int R, ArrayList<Float> arr) {
+        int m;
+        float S_L = 0;
+        for (int i = L; i < R; i++) {
+            S_L = S_L + arr.get(i);
+        }
+        float S_R = arr.get(R);
+        m = R;
+        System.out.println(S_L + " : " + S_R);
+        if (S_L < S_R) {
+            m = m - 1;
+        }
+        while (S_L >= S_R) {
+            m = m - 1;
+            S_L = S_L - arr.get(m);
+            S_R = S_R + arr.get(m);
+        }
+        return m;
+    }
+
 
 }
