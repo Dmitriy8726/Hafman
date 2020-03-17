@@ -177,7 +177,10 @@ public class Main {
             map_prob_F3.put(entry.getKey().toString(), (Float) entry.getValue() / all_F3);
         }
 
-        ArrayList<Float> arr = new ArrayList<>(map_prob_F2.values());
+
+        ///////////////////////////////
+
+        ArrayList<Float> arr = new ArrayList<>(map_prob_F3.values());
         Collections.sort(arr);
 
         Map<Float, String> tt = new HashMap<>();
@@ -187,14 +190,34 @@ public class Main {
 
         Main n = new Main();
         n.Fano(0, arr.size() - 1, arr, tt);
-        System.out.println(tt);
+
+        Map<String, String> map_code = new HashMap<>();
+        for (Map.Entry entry1 : map_prob_F3.entrySet()) {
+            for (Map.Entry entry2 : tt.entrySet()) {
+                if ((float)entry2.getKey() == (float)entry1.getValue()) {
+                    map_code.put(entry1.getKey().toString(), entry2.getValue().toString());
+                    break;
+                }
+            }
+        }
+        System.out.println(map_code);
+
+        FileWriter writer_F3 = new FileWriter("resource\\file\\F2_exmpl.txt");
+        reader_F3 = new FileReader("resource\\file\\F2.txt");
+        while((ch = reader_F3.read()) != -1) {
+            if (map_prob_F3.containsKey(String.valueOf((char)ch))) {
+                writer_F3.write(map_code.get(String.valueOf((char) ch)));
+            }
+        }
+        writer_F3.flush();
+        writer_F3.close();
+
     }
 
     private void Fano(int L, int R, ArrayList<Float> arr, Map<Float, String> map) {
         int m;
         if (L < R) {
             m = Med(L, R, arr);
-            System.out.println(L + " : " + R + ": " + m);
             for (int i = L; i <= R; i++) {
                 if (i <= m) {
                     map.replace(arr.get(i), map.get(arr.get(i)) + "0");
@@ -215,7 +238,6 @@ public class Main {
         }
         float S_R = arr.get(R);
         m = R;
-        System.out.println(S_L + " : " + S_R);
         if (S_L < S_R) {
             m = m - 1;
         }
